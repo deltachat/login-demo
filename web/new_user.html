@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Delta Login Demo</title>
+</head>
+
+<body>
+  <h1>Delta Login Demo</h1>
+  <div id="loading">Loading</div>
+  <img src="#" id="qr">
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    function start() {
+      var socket = io();
+      socket.emit('getQR', function (qr_data) {
+        // show qrcode
+        console.log(qr_data)
+
+        var qr_img_src = `https://api.qrserver.com/v1/create-qr-code/?qzone=1&data=${
+          encodeURIComponent(qr_data)
+        }`
+        document.getElementById("qr").src = qr_img_src
+        document.getElementById("qr").addEventListener('load', _ => {
+          // hide loading spinner
+          document.getElementById("loading").hidden = true
+        })
+      });
+
+      socket.on('verified', function (token) {
+        console.log(token)
+        // set cookie
+        // reload page
+      });
+    }
+
+    start();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "delta-login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/main"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "deltachat-node": "^1.0.0-alpha.11",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "rc": "^1.2.8",
+    "socket.io": "^2.3.0",
+    "sqlite3": "^4.1.0",
+    "uuid": "^3.3.3"
+  }
+}
