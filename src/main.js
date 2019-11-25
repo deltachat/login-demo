@@ -107,7 +107,7 @@ io.on('connection', function (socket) {
         const qr_data = dc.getSecurejoinQrCode(login_group_id)
 
         qrcode_generator.toDataURL(qr_data, function (err, url) {
-          fn(url);
+          fn(url, qr_data);
         })
     });
 

@@ -12,14 +12,17 @@
   <h1>Delta Login Demo</h1>
   <div id="loading">Loading</div>
   <img src="#" id="qr">
+  <a id="qr_content" hidden>Manual link</a>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     function start() {
       var socket = io();
-      socket.emit('getQR', function (qr_code_data_url) {
+      socket.emit('getQR', function (qr_code_data_url, qr_data) {
         console.log("qrcode recieved")
         document.getElementById("qr").src = qr_code_data_url
+        document.getElementById("qr_content").href = qr_data
+        document.getElementById("qr_content").hidden = false
         document.getElementById("qr").addEventListener('load', _ => {
           // hide loading spinner
           document.getElementById("loading").hidden = true
