@@ -82,7 +82,8 @@ io.on('connection', function (socket) {
     // configure dc work around
     socket.on('getQR', function (fn) {
         // Get QR code
-        const login_group_id = dc.createUnverifiedGroupChat("login bot group")
+        let group_name = `LoginBot group (${uuid().slice(0, 4)})`
+        const login_group_id = dc.createUnverifiedGroupChat(group_name)
 
         listenOnGroupchange(login_group_id, () => {
             console.log("hi")
