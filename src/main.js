@@ -76,6 +76,7 @@ io.on('connection', function (socket) {
                     return;
                 }
                 insertEntry(token, newContactId).then(_ => {
+                    console.log("emit verified");
                     // send token on verification
                     socket.emit("verified", token)
                 })
