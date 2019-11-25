@@ -16,7 +16,7 @@ function init_db(filename) {
  */
 async function getEntry(sessionToken) {
     return await new Promise((res, rej) => {
-        db.get(`SELECT * FROM logins WHERE chatId = $sessionToken `,{
+        db.get(`SELECT * FROM logins WHERE sessionToken = $sessionToken `,{
             $sessionToken: sessionToken
         }, (err, result) => {
             if (err) {
