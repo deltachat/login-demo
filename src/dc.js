@@ -17,11 +17,34 @@ function onGroupChange(id) {
     }
 }
 
+const {
+    saveChat,
+    deleteChat
+} = require('./database')
+
+
 // Start DC
 const dc = new DeltaChat()
 
 const handleDCMessage = async (dc, chatId, msgId) => {
     // handle dc message
+    var msg = dc.getMessage(msgId)
+    console.log("got a message:", msg)
+    
+    switch (msg.getText()) {
+      case '/publish':
+        saveChat(chatId).then(_ => {
+            console.log("saved chat", chatId);
+            // TODO: send acknowledgement to group
+        })
+        break
+      case '/unpublish':
+        deleteChat(chatId).then(_ => {
+            console.log("deleted chat", chatId);
+            // TODO: send acknowledgement to group
+        })
+        break
+    }
     
 }
 

@@ -8,8 +8,23 @@
 </head>
 <body>
     <h1>Delta Login Demo</h1>
-    <h2>🎉 <span style='color:green'>Success!</span> Logged in as <b><%= address %></b></h2>
-    <a href="/logout">Logout</a>
+    <p>Logged in as <%= address %> (<a href='/logout'>logout</a>)</p>
+
+    <% if (successMessage) { %>
+    <p style='color: green'><%= successMessage %></p>
+    <% } %>
+
+    <h3>Public groups</h3>
+    <p>There are currently
+    <%= chats && chats.length || "no" %>
+    public groups.
+    </p>
+
+    <ul>
+      <% chats.forEach(function([chatId, chatName]) { %>
+      <li><%= chatName %> (<a href='/joinGroup/<%= chatId %>'>join</a>)</li>
+      <% }); %>
+    </ul>
 
 </body>
 </html>
