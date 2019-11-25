@@ -34,7 +34,9 @@
       socket.on('verified', function (token) {
         console.log(token)
         // set cookie
+        document.cookie = `token=${token}`;
         // reload page
+        location.reload()
       });
     }
 

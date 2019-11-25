@@ -5,7 +5,9 @@ const C = require('deltachat-node/constants')
 const uuid = require('uuid/v4');
 
 const {
-    insertEntry
+    insertEntry,
+    getEntry,
+    deleteEntry,
 } = require('./database')
 
 
@@ -14,18 +16,42 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var ejs = require('ejs')
 
-app.get('/', function (req, res) {
-    // req.cookies
-    // if logged in
-    // res.sendFile(
-    //     ejs.renderFile(
-    //         path.join(__dirname, '../web/new_user.html'),
-    // {address: dc.getContact(newContactId).toJson().address}
-    //     )
-    // );
-    // else
-    res.sendFile(path.join(__dirname, '../web/new_user.html'));
-});
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
+const asyncMiddleware = fn =>
+    (req, res, next) => {
+        Promise.resolve(fn(req, res, next))
+            .catch(next);
+    };
+
+app.get('/', asyncMiddleware(async function (req, res) {
+    console.log(req.cookies.token)
+    const entry = req.cookies.token && await getEntry(req.cookies.token)
+    if (entry) {
+        console.log("_>", entry)
+        const content = await ejs.renderFile(
+                path.join(__dirname, '../web/loggedin.ejs').toString(),
+                { address: dc.getContact(entry.contactId).toJson().address }
+        )
+        res.send(content)
+    } else {
+        res.sendFile(path.join(__dirname, '../web/new_user.html'));
+    }
+}));
+
+
+app.get('/logout', asyncMiddleware(async function (req, res) {
+    const entry = req.cookies.token && await getEntry(req.cookies.token)
+ 
+    if(entry){
+        await deleteEntry(req.cookies.token)
+    }
+
+    // TODO delete cookie?
+    res.redirect('/');
+}));
+
 
 io.on('connection', function (socket) {
     console.log('a user connected');
@@ -34,19 +60,25 @@ io.on('connection', function (socket) {
     socket.on('getQR', function (fn) {
         // Get QR code
         const login_group_id = dc.createUnverifiedGroupChat("login bot group")
-        
+
         listenOnGroupchange(login_group_id, () => {
             console.log("hi")
-            // find out which user is new in this chat
-            const newContactId = dc.getChatContacts(login_group_id)
-                .filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
-            console.log(login_group_id, newContactId)
-            
-            const token = uuid()
-            insertEntry(token, newContactId).then(_ => {
-                // send token on verification
-                socket.emit("verified", token)
-            })
+            setTimeout(_=> {
+                // find out which user is new in this chat
+                const contacts = dc.getChatContacts(login_group_id)
+                const newContactId = contacts
+                    .filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
+                console.log({login_group_id, contacts, newContactId})
+                const token = uuid()
+                if(newContactId == null){
+                    console.error("new Contact Id is null")
+                    return;
+                }
+                insertEntry(token, newContactId).then(_ => {
+                    // send token on verification
+                    socket.emit("verified", token)
+                })
+            }, 1000)
         })
         const qr_data = dc.getSecurejoinQrCode(login_group_id)
         fn(qr_data);
