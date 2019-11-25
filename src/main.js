@@ -15,6 +15,7 @@ var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var ejs = require('ejs')
+var qrcode_generator = require('qrcode')
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -81,7 +82,10 @@ io.on('connection', function (socket) {
             }, 1000)
         })
         const qr_data = dc.getSecurejoinQrCode(login_group_id)
-        fn(qr_data);
+
+        qrcode_generator.toDataURL(qr_data, function (err, url) {
+          fn(url);
+        })
     });
 
     socket.on('disconnect', function () {

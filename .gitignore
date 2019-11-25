@@ -1,3 +1,4 @@
 node_modules
 .login-dcrc
 data
+npm-debug.log

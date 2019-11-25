@@ -17,14 +17,8 @@
   <script>
     function start() {
       var socket = io();
-      socket.emit('getQR', function (qr_data) {
-        // show qrcode
-        console.log(qr_data)
-
-        var qr_img_src = `https://api.qrserver.com/v1/create-qr-code/?qzone=1&data=${
-          encodeURIComponent(qr_data)
-        }`
-        document.getElementById("qr").src = qr_img_src
+      socket.emit('getQR', function (qr_code_data_url) {
+        document.getElementById("qr").src = qr_code_data_url
         document.getElementById("qr").addEventListener('load', _ => {
           // hide loading spinner
           document.getElementById("loading").hidden = true
