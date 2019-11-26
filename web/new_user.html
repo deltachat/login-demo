@@ -19,7 +19,7 @@
     function start() {
       var socket = io();
       socket.emit('getQR', function (qr_code_data_url, qr_data) {
-        console.log("qrcode recieved")
+        console.log("qrcode recieved", qr_data)
         document.getElementById("qr").src = qr_code_data_url
         document.getElementById("qr_content").href = qr_data
         document.getElementById("qr_content").hidden = false
