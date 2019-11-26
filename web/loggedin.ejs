@@ -21,8 +21,14 @@
     </p>
 
     <ul>
-      <% chats.forEach(function([chatId, chatName]) { %>
-      <li><%= chatName %> (<a href='/joinGroup/<%= chatId %>'>join</a>)</li>
+      <% chats.forEach(function({chatId, chatName, already_joined}) { %>
+      <li><%= chatName %>
+        <% if (already_joined) { %>
+          <span title="You are part of this group already" style='color: green; font-weight: 1.2em'>✓</span>
+        <% } else { %>
+          (<a href='/joinGroup/<%= chatId %>'>join</a>)
+        <% } %>
+      </li>
       <% }); %>
     </ul>
 

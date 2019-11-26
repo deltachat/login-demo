@@ -33,12 +33,19 @@ app.get('/', asyncMiddleware(async function (req, res) {
     const entry = req.cookies.token && await getEntry(req.cookies.token)
     if (entry) {
         console.log("_>", entry)
-        chatIds = await getChats() || []
+        let chatIds = await getChats() || []
+        let chats = chatIds.map(chatId => {
+                      return {
+                        "chatId": chatId,
+                        "chatName": dc.getChat(chatId).getName(),
+                        "already_joined": dc.isContactInChat(chatId, entry.contactId)
+                      } })
+
         const content = await ejs.renderFile(
                 path.join(__dirname, '../web/loggedin.ejs').toString(),
                 {
                   address: dc.getContact(entry.contactId).toJson().address,
-                  chats: chatIds.map(chatId => [chatId, dc.getChat(chatId).getName()]),
+                  chats: chats,
                   successMessage: req.cookies.successMessage
                 }
         )
