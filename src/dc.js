@@ -8,12 +8,12 @@ global.listeners = listeners
 function listenOnGroupchange(id, cb){
     listeners.push({id, cb})
 }
-function onGroupChange(id) {
+function onGroupChange(id, newContactId) {
     const i = listeners.findIndex(({id})=> id===id)
     if(i !== -1){
         const cb = listeners[i].cb
         listeners.splice(i, 1)
-        cb()
+        cb(newContactId)
     }
 }
 
@@ -60,9 +60,40 @@ dc.on('DC_EVENT_INCOMING_MSG', (...args) => handleDCMessage(dc, ...args))
 
 
 dc.on('DC_EVENT_CHAT_MODIFIED', function (chat_id) {
-    console.log(chat_id)
-    onGroupChange(chat_id)
+    console.log(`Event Chat Modified for group ${chat_id}`)
+    // Try 3 times with delay because deltachat might be slower updating the
+    // group state than us.
+    setTimeout(_ => {
+        if (!findAndHandleContactId(chat_id)) {
+            console.log("Trying again in 1s")
+            setTimeout(_ => {
+                if (!findAndHandleContactId(chat_id)) {
+                    setTimeout(_ => {
+                        if (!findAndHandleContactId(chat_id)) {
+                          console.error("Error: could not find new contact id, cancelling!")
+                        }
+                    }, 1000)
+                }
+            }, 1000)
+        }
+    }, 1000)
 })
+
+function findAndHandleContactId(chat_id) {
+    console.log("Looking to find a new contact id in the group")
+    const contacts = dc.getChatContacts(chat_id)
+    const newContactId = contacts.filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
+    console.log({chat_id, contacts, newContactId})
+    if (newContactId == null) {
+        console.error("no new contact id found")
+        return false
+    }
+    console.log(`found new contact id: ${newContactId}`)
+    onGroupChange(chat_id, newContactId)
+    // TODO: send notice to contact that they may delete this group now
+    // TODO: remove self from group
+    return true
+}
 
 dc.open(path.join(__dirname, '../data'), () => {
     if (!dc.isConfigured()) {

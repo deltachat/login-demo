@@ -92,30 +92,20 @@ io.on('connection', function (socket) {
         let group_name = `LoginBot group (${uuid().slice(0, 4)})`
         const login_group_id = dc.createUnverifiedGroupChat(group_name)
 
-        listenOnGroupchange(login_group_id, () => {
-            console.log("hi")
-            setTimeout(_=> {
-                // find out which user is new in this chat
-                const contacts = dc.getChatContacts(login_group_id)
-                const newContactId = contacts
-                    .filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
-                console.log({login_group_id, contacts, newContactId})
-                const token = uuid()
-                if(newContactId == null){
-                    console.error("new Contact Id is null")
-                    return;
-                }
-                insertEntry(token, newContactId).then(_ => {
-                    console.log("emit verified");
-                    // send token on verification
-                    socket.emit("verified", token)
-                })
-            }, 1000)
+        listenOnGroupchange(login_group_id, (newContactId) => {
+            console.log("new contact was added to group, saving token into DB")
+            const token = uuid()
+            insertEntry(token, newContactId).then(_ => {
+                console.log("notifying socket about verified token")
+                // send token on verification. toString() apparently helps to
+                // avoid garbage collection of the token.
+                socket.emit("verified", token.toString())
+            }, console.error)
         })
-        const qr_data = dc.getSecurejoinQrCode(login_group_id)
 
+        const qr_data = dc.getSecurejoinQrCode(login_group_id)
         qrcode_generator.toDataURL(qr_data, function (err, url) {
-          fn(url, qr_data);
+            fn(url, qr_data);
         })
     });
 
