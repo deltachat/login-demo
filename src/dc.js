@@ -52,6 +52,16 @@ dc.on('DC_EVENT_INCOMING_MSG', (...args) => handleDCMessage(dc, ...args))
 // dc.on('ALL', console.log.bind(null, 'core |'))// for debugging
 
 
+dc.on('DC_EVENT_SECUREJOIN_MEMBER_ADDED', function (chat_id, contact_id) {
+    console.log(`Group ${chat_id} was successfully created and joined by contact ${contact_id}`)
+    console.log(`Sending you-may-leave-message to chat ${chat_id}`)
+    dc.sendMessage(chat_id, "You may leave and remove this chat now.")
+    console.log(`Leaving chat ${chat_id}`)
+    dc.removeContactFromChat(chat_id, C.DC_CONTACT_ID_SELF)
+    console.log(`Deleting chat ${chat_id}`)
+    dc.deleteChat(chat_id)
+})
+
 dc.open(path.join(__dirname, '../data'), () => {
     if (!dc.isConfigured()) {
         dc.configure({
