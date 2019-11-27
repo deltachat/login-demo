@@ -73,7 +73,7 @@ async function getChats() {
  */
 async function getAuthCode(authcode) {
     return await new Promise((res, rej) => {
-        db.get(`SELECT * FROM oauth2_authcodes WHERE authcode = $authcode `,{
+        db.get(`SELECT * FROM oauth2_authcodes WHERE authcode = $authcode `, {
             $authcode: authcode
         }, (err, result) => {
             if (err) {
@@ -112,7 +112,7 @@ async function insertAuthCode(authcode, contactId) {
  */
 async function getEntry(sessionToken) {
     return await new Promise((res, rej) => {
-        db.get(`SELECT * FROM logins WHERE sessionToken = $sessionToken `,{
+        db.get(`SELECT * FROM logins WHERE sessionToken = $sessionToken `, {
             $sessionToken: sessionToken
         }, (err, result) => {
             if (err) {

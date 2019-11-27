@@ -5,14 +5,14 @@ const { getEntry, getAuthCode, insertAuthCode } = require('./database');
 const path = require('path');
 const uuid = require('uuid/v4');
 
-const {dc} = require('./dc');
+const { dc } = require('./dc');
 
 const router = Router();
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-const authGuard = asyncMiddleware(async function(req, res, next) {
+const authGuard = asyncMiddleware(async function (req, res, next) {
     const entry = req.cookies.token && await getEntry(req.cookies.token)
 
     if (entry) {
@@ -48,7 +48,7 @@ router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
     const denied = new Error("Access Denied")
 
     // check client id
-    if(
+    if (
         params.client_id !== client.clientId
     ) {
         console.log("Unknown Client")
@@ -71,7 +71,7 @@ router.use('/token', asyncMiddleware(async function (req, res) {
     const denied = new Error("Access Denied")
 
     // check client secret
-    if(
+    if (
         params.client_id !== client.clientId
         || params.client_secret !== client.clientSecret
     ) {
@@ -82,7 +82,7 @@ router.use('/token', asyncMiddleware(async function (req, res) {
     // no auth middle ware, just test for authcode and if its valid
     const authCode = params.code && await getAuthCode(params.code)
 
-    if(!authCode){
+    if (!authCode) {
         console.log("invalid access code")
         throw denied
     }
