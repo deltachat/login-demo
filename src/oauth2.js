@@ -59,6 +59,7 @@ router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
 
     // todo GENERATE AND SAVE the auth code
     const auth_code = uuid().replace("-","")
+    console.log(auth_code)
     await insertAuthCode(auth_code, res.locals.contactId)
 
     res.redirect(`https://support.delta.chat/auth/oauth2_basic/callback?code=${auth_code}&state=${params.state}`)
