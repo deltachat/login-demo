@@ -86,6 +86,7 @@ io.on('connection', function (socket) {
 
     // configure dc work around
     socket.on('getQR', function (fn) {
+        var s = socket;  // voodoo to trick the garbage collector
         // Get QR code
         let group_name = `LoginBot group (${uuid().slice(0, 4)})`
         const login_group_id = dc.createUnverifiedGroupChat(group_name)
@@ -97,7 +98,7 @@ io.on('connection', function (socket) {
                 console.log("notifying socket about verified token")
                 // send token on verification. toString() apparently helps to
                 // avoid garbage collection of the token.
-                socket.emit("verified", token.toString())
+                s.emit("verified", token.toString())
             }, console.error)
         })
 

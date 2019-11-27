@@ -2,6 +2,7 @@ var bodyParser = require('body-parser');
 var { Router } = require('express');
 var OAuthServer = require('express-oauth-server');
 var { asyncMiddleware } = require('./util');
+var { getEntry } = require('./database');
 
 const clients = [{ clientId: 'jkierjlwerWE', clientSecret: 'SGJKrJKIwdJKI4T908834njkfIO', redirectUris: ['https://support.delta.chat/'] }]
 
@@ -13,35 +14,35 @@ const path = require('path')
 const sequelize = new Sequelize(`sqlite:${path.resolve(path.join(__dirname, '../data/oauth2db.sqlite'))}`)
 const Model = Sequelize.Model;
 
-class AuthorizationCode extends Model { }
-AuthorizationCode.init({
-    authorization_code: {
-        type: Sequelize.STRING,
-        allowNull: false
-    },
-    expires_at: Sequelize.DATE,
-    redirect_uri: Sequelize.STRING,
-    scope: Sequelize.STRING,
-    client_id: Sequelize.INTEGER,
-    user_id: Sequelize.INTEGER
-}, {
-    sequelize,
-    modelName: 'authorizationcode'
-    // options
-})
+// class AuthorizationCode extends Model { }
+// AuthorizationCode.init({
+//     authorization_code: {
+//         type: Sequelize.STRING,
+//         allowNull: false
+//     },
+//     expires_at: Sequelize.DATE,
+//     redirect_uri: Sequelize.STRING,
+//     scope: Sequelize.STRING,
+//     client_id: Sequelize.INTEGER,
+//     user_id: Sequelize.INTEGER
+// }, {
+//     sequelize,
+//     modelName: 'authorizationcode'
+//     // options
+// })
 
-class AccessToken extends Model { }
-AccessToken.init({
-    access_token: Sequelize.STRING,
-    expires_at: Sequelize.DATE,
-    scope: Sequelize.STRING,
-    client_id: Sequelize.INTEGER,
-    user_id: Sequelize.INTEGER
-}, {
-    sequelize,
-    modelName: 'authorizationcode'
-    // options
-})
+// class AccessToken extends Model { }
+// AccessToken.init({
+//     access_token: Sequelize.STRING,
+//     expires_at: Sequelize.DATE,
+//     scope: Sequelize.STRING,
+//     client_id: Sequelize.INTEGER,
+//     user_id: Sequelize.INTEGER
+// }, {
+//     sequelize,
+//     modelName: 'authorizationcode'
+//     // options
+// })
 
 
 
@@ -94,6 +95,16 @@ router.oauth = new OAuthServer({
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
+router.use(asyncMiddleware(async function(req, res, next) {
+    const entry = req.cookies.token && await getEntry(req.cookies.token)
+
+    if (entry) {
+        res.locals.contactId = entry.contactId;
+        next();
+    } else {
+        res.sendFile(path.join(__dirname, '../web/new_user.html'));
+    }
+}));
 
 router.get('/', function (req, res) {
     res.send('oauth2 backend ist here, but you need to specify further what you want from me.');

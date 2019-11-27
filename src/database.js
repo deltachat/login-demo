@@ -68,6 +68,7 @@ async function getChats() {
 /**
  * 
  * @param {string} sessionToken
+ * @returns {{sessionToken:string, contactId:number}}
  */
 async function getEntry(sessionToken) {
     return await new Promise((res, rej) => {
