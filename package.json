@@ -10,12 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "deltachat-node": "^1.0.0-alpha.11",
     "ejs": "^3.0.1",
     "express": "^4.17.1",
+    "express-oauth-server": "^2.0.0",
     "qrcode": "^1.4.4",
     "rc": "^1.2.8",
+    "sequelize": "^5.21.2",
     "socket.io": "^2.3.0",
     "sqlite3": "^4.1.0",
     "uuid": "^3.3.3"

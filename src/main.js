@@ -1,3 +1,5 @@
+const { router } = require("./oauth2");
+
 const config = require('./config')
 const { dc, listenOnGroupchange } = require('./dc')
 const path = require('path')
@@ -14,6 +16,7 @@ const {
 
 
 var app = require('express')();
+exports.app = app;
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var ejs = require('ejs')
@@ -113,6 +116,8 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 });
+
+app.use('/oauth2', router)
 
 const PORT = process.env.PORT || 3000
 
