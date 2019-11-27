@@ -4,6 +4,7 @@ const { asyncMiddleware } = require('./util');
 const { getEntry, getAuthCode, insertAuthCode } = require('./database');
 const path = require('path');
 const uuid = require('uuid/v4');
+const config = require('./config')
 
 const { dc } = require('./dc');
 
@@ -35,11 +36,7 @@ router.get('/', authGuard, function (req, res) {
     res.send('oauth2 backend ist here, but you need to specify further what you want from me.');
 });
 
-const client = {
-    clientId: '7e1fe1a1-f14b-4696-aa33-041905353469',
-    clientSecret: 'SGJKsasd;dsarJKIwdJKI4T908834njkfIO',
-    redirectUris: ['https://support.delta.chat/']
-}
+const client = config.client
 
 router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
     const params = Object.assign({}, req.body, req.query)
@@ -52,6 +49,11 @@ router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
         params.client_id !== client.clientId
     ) {
         console.log("Unknown Client")
+        throw denied
+    }
+
+    if(!config.client.redirectUris.includes(params.redirect_uri)){
+        console.log("Forbidden redirect")
         throw denied
     }
 

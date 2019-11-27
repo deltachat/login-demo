@@ -13,7 +13,12 @@ node.js version 10 or higher required.
 ```json
 {
     "email_address": "loginbot@example.org",
-    "email_password": "verysecure"
+    "email_password": "verysecure",
+    "client": {
+        "clientId": "random string",
+        "clientSecret": "random string",
+        "redirectUris": ["https://support.delta.chat/auth/oauth2_basic/callback"]
+    }
 }
 ```
 
