@@ -9,6 +9,7 @@ function init_db(filename) {
     db.serialize(function () {
         db.run("CREATE TABLE IF NOT EXISTS logins (sessionToken TEXT PRIMARY KEY, contactId INTEGER);");
         db.run("CREATE TABLE IF NOT EXISTS groups (chatId INTEGER PRIMARY KEY);");
+        db.run("CREATE TABLE IF NOT EXISTS oauth2_authcodes (authcode TEXT PRIMARY KEY,contactId INTEGER);");
     })
 }
 
@@ -60,6 +61,45 @@ async function getChats() {
             } else {
                 const chatIds = result.map(obj => obj.chatId)
                 res(chatIds);
+            }
+        });
+    });
+}
+
+/**
+ * 
+ * @param {string} authcode
+ * @returns {{authcode:string, contactId:number}}
+ */
+async function getAuthCode(authcode) {
+    return await new Promise((res, rej) => {
+        db.get(`SELECT * FROM oauth2_authcodes WHERE authcode = $authcode `,{
+            $authcode: authcode
+        }, (err, result) => {
+            if (err) {
+                rej(err);
+            } else {
+                res(result);
+            }
+        });
+    });
+}
+
+/**
+ * 
+ * @param {string} authcode 
+ * @param {number} contactId 
+ */
+async function insertAuthCode(authcode, contactId) {
+    return await new Promise((res, rej) => {
+        db.run("INSERT INTO oauth2_authcodes (authcode, contactId) VALUES ($authcode, $contactId)", {
+            $authcode: authcode,
+            $contactId: contactId,
+        }, (err) => {
+            if (err) {
+                rej(err);
+            } else {
+                res();
             }
         });
     });
@@ -136,6 +176,8 @@ module.exports = {
     getEntry,
     insertEntry,
     deleteEntry,
+    getAuthCode,
+    insertAuthCode,
     getChats,
     saveChat,
     deleteChat

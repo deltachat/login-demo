@@ -1,45 +1,18 @@
-var bodyParser = require('body-parser');
-var { Router } = require('express');
-var OAuthServer = require('express-oauth-server');
-var { asyncMiddleware } = require('./util');
-var { getEntry } = require('./database');
+const bodyParser = require('body-parser');
+const { Router } = require('express');
+const { asyncMiddleware } = require('./util');
+const { getEntry, getAuthCode, insertAuthCode } = require('./database');
+const path = require('path');
+const uuid = require('uuid/v4');
 
-var router = Router();
-router.oauth = new OAuthServer({
-    model: {
-        saveAuthorizationCode: function (code, client, user) {
-            // imaginary DB queries
-            let authCode = {
-                authorization_code: code.authorizationCode,
-                expires_at: code.expiresAt,
-                redirect_uri: code.redirectUri,
-                scope: code.scope,
-                client_id: client.id,
-                user_id: user.id
-            };
-            //TODO
+const {dc} = require('./dc');
 
-            return {
-                authorizationCode: authorizationCode.authorization_code,
-                expiresAt: authorizationCode.expires_at,
-                redirectUri: authorizationCode.redirect_uri,
-                scope: authorizationCode.scope,
-                client: { id: authorizationCode.client_id },
-                user: { id: authorizationCode.user_id }
-            };
-
-        },
-        authCode: function (accessToken) {
-
-
-        }
-    },
-});
+const router = Router();
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
-router.use(asyncMiddleware(async function(req, res, next) {
+const authGuard = asyncMiddleware(async function(req, res, next) {
     const entry = req.cookies.token && await getEntry(req.cookies.token)
 
     if (entry) {
@@ -48,23 +21,89 @@ router.use(asyncMiddleware(async function(req, res, next) {
     } else {
         res.sendFile(path.join(__dirname, '../web/new_user.html'));
     }
-}));
+});
 
-router.get('/', function (req, res) {
+router.use((err, req, res, next) => {
+    console.error(err.stack)
+    res.status(500).json({
+        error: "A wild error appeared",
+        error_description: err.message
+    })
+})
+
+router.get('/', authGuard, function (req, res) {
     res.send('oauth2 backend ist here, but you need to specify further what you want from me.');
 });
 
-router.use('/authorize', router.oauth.authorize(), function (req, res) {
-    res.send('Secret area - authorize');
-});
+const client = {
+    clientId: '7e1fe1a1-f14b-4696-aa33-041905353469',
+    clientSecret: 'SGJKsasd;dsarJKIwdJKI4T908834njkfIO',
+    redirectUris: ['https://support.delta.chat/']
+}
 
-router.use('/authenticate', router.oauth.authenticate()
-    // , function (req, res) {
-    //     res.send('Secret area - authenticate');
-    // }
-);
+router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
+    const params = Object.assign({}, req.body, req.query)
+    console.log(params)
 
-router.use('/token', router.oauth.token());
+    const denied = new Error("Access Denied")
+
+    // check client id
+    if(
+        params.client_id !== client.clientId
+    ) {
+        console.log("Unknown Client")
+        throw denied
+    }
+
+    // todo GENERATE AND SAVE the auth code
+    const auth_code = uuid()
+    await insertAuthCode(auth_code, res.locals.contactId)
+
+    res.redirect(`https://support.delta.chat/auth/oauth2_basic/callback?code=${auth_code}`)
+
+}));
+
+router.use('/token', asyncMiddleware(async function (req, res) {
+
+    const params = Object.assign({}, req.body, req.query)
+    console.log(params)
+
+    const denied = new Error("Access Denied")
+
+    // check client secret
+    if(
+        params.client_id !== client.clientId
+        || params.client_secret !== client.clientSecret
+    ) {
+        console.log("Unknown Client")
+        throw denied
+    }
+
+    // no auth middle ware, just test for authcode and if its valid
+    const authCode = params.code && await getAuthCode(params.code)
+
+    if(!authCode){
+        console.log("invalid access code")
+        throw denied
+    }
+
+    // get userid from authcode
+    const userId = authCode.contactId
+    const user = dc.getContact(authCode.contactId).toJson()
+    // generate token
+    const token = uuid()
+
+    res.json({
+        access_token: token,
+        info: {
+            userid: `DeltaLoginUser${userId}`, // for linking with discourse
+            username: user.address == user.displayName ? undefined : user.displayName,
+            email: user.address,
+        }
+    })
+}));
+
+
 
 
 exports.router = router;

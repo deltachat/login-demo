@@ -5,7 +5,7 @@ const { dc, listenOnGroupchange } = require('./dc')
 const path = require('path')
 const C = require('deltachat-node/constants')
 const uuid = require('uuid/v4');
-var { asyncMiddleware } = require('./util');
+const { asyncMiddleware } = require('./util');
 
 const {
     insertEntry,
@@ -16,12 +16,12 @@ const {
 } = require('./database')
 
 
-var app = require('express')();
+const app = require('express')();
 exports.app = app;
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
-var ejs = require('ejs')
-var qrcode_generator = require('qrcode')
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const ejs = require('ejs')
+const qrcode_generator = require('qrcode')
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -86,7 +86,7 @@ io.on('connection', function (socket) {
 
     // configure dc work around
     socket.on('getQR', function (fn) {
-        var s = socket;  // voodoo to trick the garbage collector
+        const s = socket;  // voodoo to trick the garbage collector
         // Get QR code
         let group_name = `LoginBot group (${uuid().slice(0, 4)})`
         const login_group_id = dc.createUnverifiedGroupChat(group_name)
