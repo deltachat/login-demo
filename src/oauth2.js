@@ -48,11 +48,11 @@ router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
     if (
         params.client_id !== client.clientId
     ) {
-        console.log("Unknown Client")
+        console.log("Unknown Client - auth")
         throw denied
     }
 
-    if(!config.client.redirectUris.includes(params.redirect_uri)){
+    if (!config.client.redirectUris.includes(params.redirect_uri)) {
         console.log("Forbidden redirect")
         throw denied
     }
@@ -67,8 +67,16 @@ router.all('/authorize', authGuard, asyncMiddleware(async function (req, res) {
 
 router.use('/token', asyncMiddleware(async function (req, res) {
 
-    const params = Object.assign({}, req.body, req.query)
-    console.log(params)
+    var params = Object.assign({}, req.body, req.query)
+
+    if (req.headers.authorization) {
+        const auth = Buffer.from(
+            req.headers.authorization.replace(/^Basic /, ""),
+            'base64'
+            ).toString('ASCII').split(':')
+        params.client_id = auth[0]
+        params.client_secret = auth[1]
+    }
 
     const denied = new Error("Access Denied")
 
