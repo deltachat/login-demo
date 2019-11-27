@@ -103,7 +103,7 @@ dc.open(path.join(__dirname, '../data'), () => {
             e2ee_enabled: false,
         })
     }
-    console.log(console.log('init done'))
+    console.log('init done')
 })
 
 process.on('exit', () => {
