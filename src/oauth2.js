@@ -1,6 +1,7 @@
 var bodyParser = require('body-parser');
 var { Router } = require('express');
 var OAuthServer = require('express-oauth-server');
+var { asyncMiddleware } = require('./util');
 
 const clients = [{ clientId: 'jkierjlwerWE', clientSecret: 'SGJKrJKIwdJKI4T908834njkfIO', redirectUris: ['https://support.delta.chat/'] }]
 

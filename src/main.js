@@ -5,6 +5,7 @@ const { dc, listenOnGroupchange } = require('./dc')
 const path = require('path')
 const C = require('deltachat-node/constants')
 const uuid = require('uuid/v4');
+var { asyncMiddleware } = require('./util');
 
 const {
     insertEntry,
@@ -24,12 +25,6 @@ var qrcode_generator = require('qrcode')
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
-
-const asyncMiddleware = fn =>
-    (req, res, next) => {
-        Promise.resolve(fn(req, res, next))
-            .catch(next);
-    };
 
 app.get('/', asyncMiddleware(async function (req, res) {
     console.log(req.cookies.token)
