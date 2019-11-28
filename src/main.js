@@ -1,8 +1,11 @@
+const { router } = require("./oauth2");
+
 const config = require('./config')
 const { dc, listenOnGroupchange } = require('./dc')
 const path = require('path')
 const C = require('deltachat-node/constants')
 const uuid = require('uuid/v4');
+const { asyncMiddleware } = require('./util');
 
 const {
     insertEntry,
@@ -13,20 +16,15 @@ const {
 } = require('./database')
 
 
-var app = require('express')();
-var http = require('http').createServer(app);
-var io = require('socket.io')(http);
-var ejs = require('ejs')
-var qrcode_generator = require('qrcode')
+const app = require('express')();
+exports.app = app;
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const ejs = require('ejs')
+const qrcode_generator = require('qrcode')
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
-
-const asyncMiddleware = fn =>
-    (req, res, next) => {
-        Promise.resolve(fn(req, res, next))
-            .catch(next);
-    };
 
 app.get('/', asyncMiddleware(async function (req, res) {
     console.log(req.cookies.token)
@@ -35,19 +33,20 @@ app.get('/', asyncMiddleware(async function (req, res) {
         console.log("_>", entry)
         let chatIds = await getChats() || []
         let chats = chatIds.map(chatId => {
-                      return {
-                        "chatId": chatId,
-                        "chatName": dc.getChat(chatId).getName(),
-                        "already_joined": dc.isContactInChat(chatId, entry.contactId)
-                      } })
+            return {
+                "chatId": chatId,
+                "chatName": dc.getChat(chatId).getName(),
+                "already_joined": dc.isContactInChat(chatId, entry.contactId)
+            }
+        })
 
         const content = await ejs.renderFile(
-                path.join(__dirname, '../web/loggedin.ejs').toString(),
-                {
-                  address: dc.getContact(entry.contactId).toJson().address,
-                  chats: chats,
-                  successMessage: req.cookies.successMessage
-                }
+            path.join(__dirname, '../web/loggedin.ejs').toString(),
+            {
+                address: dc.getContact(entry.contactId).toJson().address,
+                chats: chats,
+                successMessage: req.cookies.successMessage
+            }
         )
         res.clearCookie('successMessage')
         res.send(content)
@@ -59,8 +58,8 @@ app.get('/', asyncMiddleware(async function (req, res) {
 
 app.get('/logout', asyncMiddleware(async function (req, res) {
     const entry = req.cookies.token && await getEntry(req.cookies.token)
- 
-    if(entry){
+
+    if (entry) {
         await deleteEntry(req.cookies.token)
     }
 
@@ -73,7 +72,7 @@ app.get('/joinGroup/:chatId', asyncMiddleware(async function (req, res) {
     const chatId = req.params.chatId
     const chat = chatId && dc.getChat(chatId)
     const login = req.cookies.token && await getEntry(req.cookies.token)
- 
+
     if (chat && login) {
         console.log(`Adding contact ${login.contactId} to group ${chatId}`);
         dc.addContactToChat(chatId, login.contactId)
@@ -88,6 +87,7 @@ io.on('connection', function (socket) {
 
     // configure dc work around
     socket.on('getQR', function (fn) {
+        const s = socket;  // voodoo to trick the garbage collector
         // Get QR code
         let group_name = `LoginBot group (${uuid().slice(0, 4)})`
         const login_group_id = dc.createUnverifiedGroupChat(group_name)
@@ -99,7 +99,7 @@ io.on('connection', function (socket) {
                 console.log("notifying socket about verified token")
                 // send token on verification. toString() apparently helps to
                 // avoid garbage collection of the token.
-                socket.emit("verified", token.toString())
+                s.emit("verified", token.toString())
             }, console.error)
         })
 
@@ -113,6 +113,8 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 });
+
+app.use('/oauth2', router)
 
 const PORT = process.env.PORT || 3000
 

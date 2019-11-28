@@ -5,12 +5,12 @@ const path = require('path')
 
 let listeners = []
 global.listeners = listeners
-function listenOnGroupchange(id, cb){
-    listeners.push({id, cb})
+function listenOnGroupchange(id, cb) {
+    listeners.push({ id, cb })
 }
 function onGroupChange(id, newContactId) {
-    const i = listeners.findIndex(({id})=> id===id)
-    if(i !== -1){
+    const i = listeners.findIndex(({ id }) => id === id)
+    if (i !== -1) {
         const cb = listeners[i].cb
         listeners.splice(i, 1)
         cb(newContactId)
@@ -30,22 +30,22 @@ const handleDCMessage = async (dc, chatId, msgId) => {
     // handle dc message
     var msg = dc.getMessage(msgId)
     console.log("got a message:", msg)
-    
+
     switch (msg.getText()) {
-      case '/publish':
-        saveChat(chatId).then(_ => {
-            console.log("saved chat", chatId);
-            // TODO: send acknowledgement to group
-        })
-        break
-      case '/unpublish':
-        deleteChat(chatId).then(_ => {
-            console.log("deleted chat", chatId);
-            // TODO: send acknowledgement to group
-        })
-        break
+        case '/publish':
+            saveChat(chatId).then(_ => {
+                console.log("saved chat", chatId);
+                // TODO: send acknowledgement to group
+            })
+            break
+        case '/unpublish':
+            deleteChat(chatId).then(_ => {
+                console.log("deleted chat", chatId);
+                // TODO: send acknowledgement to group
+            })
+            break
     }
-    
+
 }
 
 dc.on('DC_EVENT_MSGS_CHANGED', (chatId, msgId) => {
@@ -70,7 +70,7 @@ dc.on('DC_EVENT_CHAT_MODIFIED', function (chat_id) {
                 if (!findAndHandleContactId(chat_id)) {
                     setTimeout(_ => {
                         if (!findAndHandleContactId(chat_id)) {
-                          console.error("Error: could not find new contact id, cancelling!")
+                            console.error("Error: could not find new contact id, cancelling!")
                         }
                     }, 1000)
                 }
@@ -83,7 +83,7 @@ function findAndHandleContactId(chat_id) {
     console.log("Looking to find a new contact id in the group")
     const contacts = dc.getChatContacts(chat_id)
     const newContactId = contacts.filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
-    console.log({chat_id, contacts, newContactId})
+    console.log({ chat_id, contacts, newContactId })
     if (newContactId == null) {
         console.error("no new contact id found")
         return false
