@@ -37,7 +37,16 @@
         location.reload()
       });
 
-      socket.on('disconnect', console.log.bind(this, "diconnect"))
+      socket.on('disconnect', (ev)=>{
+        console.log("disconnected socket")
+        // reload page
+        location.reload()
+      })
+
+      setInterval(_=>{
+        console.debug("ask the server if the user logged in already (as fallback)")
+        socket.emit("poll");
+      }, 2000)
     }
 
     start();

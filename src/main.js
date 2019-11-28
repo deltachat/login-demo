@@ -84,9 +84,10 @@ app.get('/joinGroup/:chatId', asyncMiddleware(async function (req, res) {
 
 io.on('connection', function (socket) {
     console.log('a user connected');
+    var login_token;
 
     // configure dc work around
-    socket.on('getQR', function (fn) {
+    socket.on('getQR', (fn) => {
         const s = socket;  // voodoo to trick the garbage collector
         // Get QR code
         let group_name = `LoginBot group (${uuid().slice(0, 4)})`
@@ -99,7 +100,8 @@ io.on('connection', function (socket) {
                 console.log("notifying socket about verified token")
                 // send token on verification. toString() apparently helps to
                 // avoid garbage collection of the token.
-                s.emit("verified", token.toString())
+                login_token = token.toString()
+                s.emit("verified", login_token)
             }, console.error)
         })
 
@@ -107,6 +109,12 @@ io.on('connection', function (socket) {
         qrcode_generator.toDataURL(qr_data, function (err, url) {
             fn(url, qr_data);
         })
+    });
+
+    socket.on('poll', function () {
+        if (login_token) {
+            s.emit("verified", login_token)
+        }
     });
 
     socket.on('disconnect', function () {
