@@ -5,14 +5,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="styles.css">
   <title>Delta Login Demo</title>
 </head>
 
 <body>
-  <h1>Delta Login Demo</h1>
+  <main>
+  <h1 class="title">Delta Login Demo</h1>
   <div id="loading">Loading</div>
-  <img src="#" id="qr">
-  <a id="qr_content" hidden>Manual link</a>
+  <img class="qr" src="#" id="qr">
+  <br>
+  <a class="manual-link" id="qr_content" hidden>Manual link</a>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -51,7 +54,7 @@
 
     start();
   </script>
-
+  </main>
 </body>
 
 </html>

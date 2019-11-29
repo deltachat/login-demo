@@ -1,0 +1,33 @@
+main {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 25%;
+    background:#eee;    
+    padding-bottom: 50px;
+}
+.title {
+    padding-top: 30px;
+    text-align: center;
+    font-family: sans-serif;
+    background-color:#444;
+    color:white;
+    border-radius: 5px;
+    padding: 10px;
+}
+.qr {
+    width: min-content;
+    margin: auto;
+    display: block;
+}
+.manual-link {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: max-content;
+    font-family: sans-serif;
+    background-color:#444;
+    color:white;
+    border-radius: 5px;
+    padding: 10px;
+}

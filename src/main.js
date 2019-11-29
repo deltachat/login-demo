@@ -124,11 +124,11 @@ io.on('connection', function (socket) {
 
 app.use('/oauth2', router)
 
+app.get('/styles.css',(_req, res)=>{res.sendFile(path.join(__dirname, '../web/styles.css'))} )
+
 const PORT = process.env.PORT || 3000
 
 http.listen(PORT, function () {
     console.log(`listening on *:${PORT}`);
 });
-
-
 
