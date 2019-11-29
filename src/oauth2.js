@@ -14,10 +14,8 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 
 const authGuard = asyncMiddleware(async function (req, res, next) {
-    const entry = req.cookies.token && await getEntry(req.cookies.token)
-
-    if (entry) {
-        res.locals.contactId = entry.contactId;
+    if (req.session.contactId) {
+        res.locals.contactId = req.session.contactId;
         next();
     } else {
         res.sendFile(path.join(__dirname, '../web/new_user.html'));
