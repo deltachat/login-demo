@@ -32,6 +32,14 @@ app.use(session({
 
 
 app.get('/', asyncMiddleware(async function (req, res) {
+    if (req.session.contactId) {
+        return res.redirect('/dashboard')
+    } else {
+        res.sendFile(path.join(__dirname, '../web/new_user.html'))
+    }
+}));
+
+app.get('/requestQR',asyncMiddleware(async function (req, res) {
     console.log("session:", req.session)
     const group_name = `LoginBot group (${uuid().slice(0, 4)})`
     console.log("new group name:", group_name)
@@ -39,14 +47,9 @@ app.get('/', asyncMiddleware(async function (req, res) {
     console.log("new group_id:", group_id)
     const qr_data = dc.getSecurejoinQrCode(group_id)
     const qr_code_data_url = await qrcode_generator.toDataURL(qr_data)
-    const content = await ejs.renderFile(
-        path.join(__dirname, '../web/new_user.ejs').toString(),
-        { qr_code_data_url, qr_data }
-    )
     req.session.groupId = group_id
-    res.send(content)
-}));
-
+    res.json({ qr_code_data_url, qr_data })
+}))
 
 app.get('/checkStatus', asyncMiddleware(async function (req, res) {
     if (!req.session.groupId) {
