@@ -60,8 +60,6 @@ app.get('/checkStatus', asyncMiddleware(async function (req, res) {
     if (newContactId) {
 	console.log("Storing contact ID in session")
         req.session.contactId = newContactId
-	// Store also in locals, for oauth2
-        //res.locals.contactId = newContactId
         res.send("OK")
     } else {
         res.send('Not yet...')
