@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Delta Login Demo</title>
+</head>
+
+<body>
+  <main>
+    <h1 class="title">Delta Login Demo</h1>
+    <div id="loading">Loading</div>
+    <img class="qr hidden" id="qr" src="">
+    <br>
+    <a class="manual-link hidden" href='#' id="qr_content">Manual link</a>
+    <div id="error"></div>
+  </main>
+  <script>
+    const D = id => document.getElementById(id)
+    function requestQR() {
+      var req = new XMLHttpRequest()
+      req.open("GET", "/requestQR")
+      req.onload = function () {
+        console.log("Got response with text:", this.responseText)
+        try {
+          const data = JSON.parse(this.responseText)
+          if(data.qr_code_data_url) {
+            D('qr').src = data.qr_code_data_url
+            D('qr_content').src = data.qr_data
+          } else {
+            throw new Error("Data is undefined")
+          }
+          D('qr').classList.remove('hidden')
+          D('qr_content').classList.remove('hidden')
+          D('loading').classList.add('hidden')
+        } catch (error) {
+          D('error').innerHTML = `Couldn't get the QR code, please reload the page: ${this.responseText}`
+          console.error(error)
+        }
+      }
+      req.send()
+      setTimeout(checkStatus, 5000)
+    }
+    requestQR();
+
+    function checkStatus() {
+      var req = new XMLHttpRequest()
+      req.open("GET", "/checkStatus")
+      req.onload = function () {
+        console.log("Got response with text:", this.responseText)
+        if (this.responseText == 'OK') {
+          /*
+          Don't just reload but append a parameter to the URL so it is not the
+          same as before. For equal URLs, browsers apparently don't send a
+          cookie they didn't have when requesting the page for the first time.
+           */
+          var url = location.href
+          if (url.indexOf('?') > 0) {
+              url += '&'
+          } else {
+              url += '?'
+          }
+          url += 'yes=no'
+          location.href = url
+        } else {
+          setTimeout(checkStatus, 5000)
+        }
+      }
+      req.send()
+    }
+  </script>
+
+</body>
+
+</html>

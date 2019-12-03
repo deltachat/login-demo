@@ -15,9 +15,9 @@
     "deltachat-node": "^1.0.0-alpha.11",
     "ejs": "^3.0.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.0",
     "qrcode": "^1.4.4",
     "rc": "^1.2.8",
-    "socket.io": "^2.3.0",
     "sqlite3": "^4.1.0",
     "uuid": "^3.3.3"
   }
