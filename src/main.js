@@ -52,7 +52,7 @@ app.get('/requestQR', asyncMiddleware(async function (req, res) {
 
 app.get('/checkStatus', asyncMiddleware(async function (req, res) {
     if (!req.session.groupId) {
-        return res.redirect('/')
+        return res.sendStatus(401)
     }
     console.log("Looking for new contact in group", req.session.groupId)
     let newContactId = getNewContactInGroup(req.session.groupId)
