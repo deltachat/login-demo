@@ -115,7 +115,7 @@ app.get('/logout', function (req, res, next) {
     })
 }, function (req, res) {
     console.log("Session destroyed, redirecting to /")
-    res.redirect('/')
+    res.redirect('/groups')
 });
 
 
