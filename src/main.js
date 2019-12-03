@@ -11,8 +11,8 @@ const bodyParser = require('body-parser');
 
 const {
     getChats,
-	getAuthCode,
-	insertAuthCode,
+    getAuthCode,
+    insertAuthCode,
 } = require('./database')
 
 
@@ -58,7 +58,7 @@ app.get('/checkStatus', asyncMiddleware(async function (req, res) {
     let newContactId = getNewContactInGroup(req.session.groupId)
     console.log("newContactId in group:", newContactId)
     if (newContactId) {
-	console.log("Storing contact ID in session")
+        console.log("Storing contact ID in session")
         req.session.contactId = newContactId
         res.send("OK")
     } else {
@@ -75,7 +75,7 @@ const ensureAuthenticated = function (req, res, next) {
         console.log("Unauthenticated request, sending login page")
         res.sendFile(path.join(__dirname, '../web/new_user.html'))
     } else {
-	console.log("Authenticated request, calling next()")
+        console.log("Authenticated request, calling next()")
         next()
     }
 }
@@ -147,7 +147,7 @@ app.get('/joinGroup/:chatId', ensureAuthenticated, asyncMiddleware(async functio
 const client = config.client
 
 app.use('/oauth2/authorize', ensureAuthenticated, asyncMiddleware(async function (req, res) {
-	console.log("Request to /oauth2/authorize")
+    console.log("Request to /oauth2/authorize")
     const params = Object.assign({}, req.body, req.query)
     console.log("params:", params)
     console.log("session:", req.session)
@@ -167,10 +167,10 @@ app.use('/oauth2/authorize', ensureAuthenticated, asyncMiddleware(async function
 
     // todo GENERATE AND SAVE the auth code
     const auth_code = uuid().replace(/-/g,"")
-	console.log("inserting auth code")
+    console.log("inserting auth code")
     await insertAuthCode(auth_code, req.session.contactId)
 
-	console.log("sending client back to callback")
+    console.log("sending client back to callback")
     res.redirect(`https://support.delta.chat/auth/oauth2_basic/callback?state=${params.state}&code=${auth_code}`)
 
 }));
@@ -179,7 +179,7 @@ app.use('/oauth2/token', asyncMiddleware(async function (req, res) {
 	console.log("Request to /oauth2/token")
 
     var params = Object.assign({}, req.body, req.query)
-	console.log("params:", params)
+    console.log("params:", params)
 
     if (req.headers.authorization) {
         const auth = Buffer.from(
@@ -203,7 +203,7 @@ app.use('/oauth2/token', asyncMiddleware(async function (req, res) {
 
     // no auth middle ware, just test for authcode and if its valid
     const authCode = params.code && await getAuthCode(params.code)
-	console.log("authCode:", authCode)
+    console.log("authCode:", authCode)
 
     if (!authCode) {
         console.log("invalid access code")
@@ -227,7 +227,7 @@ app.use('/oauth2/token', asyncMiddleware(async function (req, res) {
 }));
 
 app.use('/oauth2', function (req, res) {
-	res.send('What can I help you with?')
+    res.send('What can I help you with?')
 })
 
 app.get('/', asyncMiddleware(async function (req, res) {
