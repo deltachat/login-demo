@@ -71,7 +71,7 @@ const ensureAuthenticated = function (req, res, next) {
     console.log("Checking authentication for request to ", req.baseUrl)
     if (!req.session.contactId) {
         console.log("Unauthenticated request, sending login page")
-        res.sendFile(path.join(__dirname, '../web/new_user.html'))
+        res.sendFile(path.join(__dirname, '../web/login.html'))
     } else {
         console.log("Authenticated request, calling next()")
         next()
@@ -94,7 +94,7 @@ app.get('/groups', ensureAuthenticated, asyncMiddleware(async function (req, res
     })
 
     const content = await ejs.renderFile(
-        path.join(__dirname, '../web/loggedin.ejs').toString(),
+        path.join(__dirname, '../web/groups.ejs').toString(),
         {
             address: dc.getContact(contactId).toJson().address,
             chats: chats,
