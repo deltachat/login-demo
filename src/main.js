@@ -1,5 +1,3 @@
-const { router } = require("./oauth2");
-
 const config = require('./config')
 const { dc, getNewContactInGroup } = require('./dc')
 const path = require('path')
