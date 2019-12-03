@@ -13,9 +13,9 @@
   <main>
     <h1 class="title">Delta Login Demo</h1>
     <div id="loading">Loading</div>
-    <img class="qr" id="qr" src="#" hidden>
+    <img class="qr" id="qr" src="" class='hidden'>
     <br>
-    <a class="manual-link" href='#' id="qr_content" hidden>Manual link</a>
+    <a class="manual-link" href='#' id="qr_content" class='hidden'>Manual link</a>
     <div id="error"></div>
   </main>
   <script>
@@ -33,9 +33,9 @@
           } else {
             throw new Error("Data is undefined")
           }
-          D('qr').hidden = false
-          D('qr_content').hidden = false
-          D('loading').hidden = true
+          D('qr').classList.remove('hidden')
+          D('qr_content').classList.remove('hidden')
+          D('loading').classList.add('hidden')
         } catch (error) {
           D('error').innerHTML = `Couldn't get the QR code, please reload the page: ${this.responseText}`
           console.error(error)
