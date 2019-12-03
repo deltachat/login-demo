@@ -70,7 +70,7 @@ app.get('/checkStatus', asyncMiddleware(async function (req, res) {
 
 
 const ensureAuthenticated = function (req, res, next) {
-    console.log("Checking authentication for request to ", req.path)
+    console.log("Checking authentication for request to ", req.baseUrl)
     if (!req.session.contactId) {
         console.log("Unauthenticated request, sending login page")
         res.sendFile(path.join(__dirname, '../web/new_user.html'))
