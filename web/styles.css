@@ -40,6 +40,12 @@ a.manual-link {
     padding: 10px;
     text-decoration: none;
 }
+p {
+    font-family: sans-serif;
+    width: 80%;
+    margin: auto;
+    margin-block-end: 1em;
+}
 @media only screen and (min-width: 420px) {
     main {
         width: 400px;
