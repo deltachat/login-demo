@@ -30,7 +30,7 @@
           const data = JSON.parse(this.responseText)
           if(data.qr_code_data_url) {
             D('qr').src = data.qr_code_data_url
-            D('qr_content').src = data.qr_data
+            D('qr_content').href = data.qr_data
           } else {
             throw new Error("Data is undefined")
           }
