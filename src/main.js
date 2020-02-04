@@ -3,7 +3,7 @@ const { dc, getNewContactInGroup } = require('./dc')
 const path = require('path')
 const C = require('deltachat-node/constants')
 const uuid = require('uuid/v4');
-const { asyncMiddleware } = require('./util');
+const { asyncMiddleware, timestamp } = require('./util');
 
 const bodyParser = require('body-parser');
 
@@ -37,11 +37,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/requestQR', asyncMiddleware(async function (req, res) {
-    console.log("session:", req.session)
+    console.log(timestamp(), "session:", req.session)
     const group_name = `LoginBot group (${uuid().slice(0, 4)})`
-    console.log("new group name:", group_name)
+    console.log(timestamp(), "new group name:", group_name)
     const group_id = dc.createUnverifiedGroupChat(group_name)
-    console.log("new group_id:", group_id)
+    console.log(timestamp(), "new group_id:", group_id)
     const qr_data = dc.getSecurejoinQrCode(group_id)
     const qr_code_data_url = await qrcode_generator.toDataURL(qr_data)
     req.session.groupId = group_id
@@ -52,11 +52,11 @@ app.get('/checkStatus', asyncMiddleware(async function (req, res) {
     if (!req.session.groupId) {
         return res.sendStatus(401)
     }
-    console.log("Looking for new contact in group", req.session.groupId)
+    console.log(timestamp(), "Looking for new contact in group", req.session.groupId)
     let newContactId = getNewContactInGroup(req.session.groupId)
-    console.log("newContactId in group:", newContactId)
+    console.log(timestamp(), "newContactId in group:", newContactId)
     if (newContactId) {
-        console.log("Storing contact ID in session")
+        console.log(timestamp(), "Storing contact ID in session")
         req.session.contactId = newContactId
         res.send("OK")
     } else {
@@ -68,12 +68,12 @@ app.get('/checkStatus', asyncMiddleware(async function (req, res) {
 
 
 const ensureAuthenticated = function (req, res, next) {
-    console.log("Checking authentication for request to ", req.baseUrl)
+    console.log(timestamp(), "Checking authentication for request to ", req.baseUrl)
     if (!req.session.contactId) {
-        console.log("Unauthenticated request, sending login page")
+        console.log(timestamp(), "Unauthenticated request, sending login page")
         res.sendFile(path.join(__dirname, '../web/login.html'))
     } else {
-        console.log("Authenticated request, calling next()")
+        console.log(timestamp(), "Authenticated request, calling next()")
         next()
     }
 }
@@ -81,9 +81,9 @@ const ensureAuthenticated = function (req, res, next) {
 
 
 app.get('/groups', ensureAuthenticated, asyncMiddleware(async function (req, res) {
-    console.log("Request to /groups, session contactId:", req.session.contactId)
+    console.log(timestamp(), "Request to /groups, session contactId:", req.session.contactId)
     let contactId = req.session.contactId
-    console.log(`Rendering dashboard for contactId ${contactId}`)
+    console.log(timestamp(), `Rendering dashboard for contactId ${contactId}`)
     let chatIds = await getChats() || []
     let chats = chatIds.map(chatId => {
         return {
@@ -112,18 +112,18 @@ app.get('/logout', function (req, res, next) {
         else next()
     })
 }, function (req, res) {
-    console.log("Session destroyed, redirecting to /")
+    console.log(timestamp(), "Session destroyed, redirecting to /")
     res.redirect('/groups')
 });
 
 
 app.get('/joinGroup/:chatId', ensureAuthenticated, asyncMiddleware(async function (req, res) {
-    console.log("Request to joinGroup")
+    console.log(timestamp(), "Request to joinGroup")
     const chatId = req.params.chatId
     const chat = chatId && dc.getChat(chatId)
 
     if (!chat) {
-        console.log("The requested chat_id does not exist")
+        console.log(timestamp(), "The requested chat_id does not exist")
         res.session.successMessage = "You'd have to create that group first, please. It does not exist yet :)"
         res.redirect('/groups')
         return
@@ -131,11 +131,11 @@ app.get('/joinGroup/:chatId', ensureAuthenticated, asyncMiddleware(async functio
 
     // Shouldn't happen, but better check twice.
     if (!req.session.contactId) {
-        console.log("Error: not contactId in session!")
+        console.log(timestamp(), "Error: not contactId in session!")
         return res.redirect('/groups')
     }
 
-    console.log(`Adding contact ${req.session.contactId} to group ${chatId}`);
+    console.log(timestamp(), `Adding contact ${req.session.contactId} to group ${chatId}`);
     dc.addContactToChat(chatId, req.session.contactId)
     res.session.successMessage = `✓ You joined group ${chat.getName()}`
     res.redirect('/groups')
@@ -145,39 +145,39 @@ app.get('/joinGroup/:chatId', ensureAuthenticated, asyncMiddleware(async functio
 const client = config.client
 
 app.use('/oauth2/authorize', ensureAuthenticated, asyncMiddleware(async function (req, res) {
-    console.log("Request to /oauth2/authorize")
+    console.log(timestamp(), "Request to /oauth2/authorize")
     const params = Object.assign({}, req.body, req.query)
-    console.log("params:", params)
-    console.log("session:", req.session)
+    console.log(timestamp(), "params:", params)
+    console.log(timestamp(), "session:", req.session)
 
     const denied = new Error("Access Denied")
 
     // check client id
     if (params.client_id !== client.clientId) {
-        console.log("Unknown Client - auth")
+        console.log(timestamp(), "Unknown Client - auth")
         throw denied
     }
 
     if (!config.client.redirectUris.includes(params.redirect_uri)) {
-        console.log("Forbidden redirect")
+        console.log(timestamp(), "Forbidden redirect")
         throw denied
     }
 
     // todo GENERATE AND SAVE the auth code
     const auth_code = uuid().replace(/-/g,"")
-    console.log("inserting auth code")
+    console.log(timestamp(), "inserting auth code")
     await insertAuthCode(auth_code, req.session.contactId)
 
-    console.log("sending client back to callback")
+    console.log(timestamp(), "sending client back to callback")
     res.redirect(`https://support.delta.chat/auth/oauth2_basic/callback?state=${params.state}&code=${auth_code}`)
 
 }));
 
 app.use('/oauth2/token', asyncMiddleware(async function (req, res) {
-	console.log("Request to /oauth2/token")
+	console.log(timestamp(), "Request to /oauth2/token")
 
     var params = Object.assign({}, req.body, req.query)
-    console.log("params:", params)
+    console.log(timestamp(), "params:", params)
 
     if (req.headers.authorization) {
         const auth = Buffer.from(
@@ -195,16 +195,16 @@ app.use('/oauth2/token', asyncMiddleware(async function (req, res) {
         params.client_id !== client.clientId
         || params.client_secret !== client.clientSecret
     ) {
-        console.log("Unknown Client")
+        console.log(timestamp(), "Unknown Client")
         throw denied
     }
 
     // no auth middle ware, just test for authcode and if its valid
     const authCode = params.code && await getAuthCode(params.code)
-    console.log("authCode:", authCode)
+    console.log(timestamp(), "authCode:", authCode)
 
     if (!authCode) {
-        console.log("invalid access code")
+        console.log(timestamp(), "invalid access code")
         throw denied
     }
 
@@ -239,5 +239,5 @@ app.get('/styles.css', (_req, res) => { res.sendFile(path.join(__dirname, '../we
 const PORT = process.env.PORT || 3000
 
 http.listen(PORT, function () {
-    console.log(`listening on *:${PORT}`);
+    console.log(timestamp(), `listening on *:${PORT}`);
 });
