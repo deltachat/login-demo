@@ -10,6 +10,16 @@ const asyncMiddleware = fn =>
             .catch(next);
     };
 
+const timestamp = function () {
+	var now = new Date();
+	return "[".concat(now.toLocaleString("en-US"), "]");
+    };
+
+const log = function (...args) {
+    console.log(timestamp(), ...args)
+}
+
 module.exports = {
-    asyncMiddleware
+    asyncMiddleware,
+    log
 }

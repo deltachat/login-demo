@@ -2,6 +2,7 @@ const config = require('./config')
 const DeltaChat = require('deltachat-node')
 const C = require('deltachat-node/constants')
 const path = require('path')
+const { log } = require('./util')
 
 function getNewContactInGroup(chat_id) {
     const contacts = dc.getChatContacts(chat_id)
@@ -20,20 +21,20 @@ const dc = new DeltaChat()
 const handleDCMessage = async (dc, chatId, msgId) => {
     // handle dc message
     var msg = dc.getMessage(msgId)
-    console.log(`Got a message for chat ${chatId}: ${msg.getText()}`)
+    log(`Got a message for chat ${chatId}: ${msg.getText()}`)
     
     switch (msg.getText()) {
       case '/publish':
-        console.log("Saving chat as public group")
+        log("Saving chat as public group")
         saveChat(chatId).then(_ => {
-            console.log("Saved chat, sending acknowledging message", chatId);
+            log("Saved chat, sending acknowledging message", chatId);
             dc.sendMessage(chatId, "OK, chat was opened to public subscription through the web login app. ✓")
         })
         break
       case '/unpublish':
-        console.log("Deleting chat from public groups")
+        log("Deleting chat from public groups")
         deleteChat(chatId).then(_ => {
-            console.log("Deleted chat, sending acknowledging message", chatId);
+            log("Deleted chat, sending acknowledging message", chatId);
             dc.sendMessage(chatId, "OK, chat was removed from public subscription. ✓")
         })
         break
@@ -60,7 +61,7 @@ dc.open(path.join(__dirname, '../data'), () => {
             e2ee_enabled: false,
         })
     }
-    console.log('init done')
+    log('init done')
 })
 
 process.on('exit', () => {
