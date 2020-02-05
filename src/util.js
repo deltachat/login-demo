@@ -15,7 +15,11 @@ const timestamp = function () {
 	return "[".concat(now.toLocaleString("en-US"), "]");
     };
 
+const log = function (...args) {
+    console.log(timestamp(), ...args)
+}
+
 module.exports = {
     asyncMiddleware,
-    timestamp
+    log
 }
