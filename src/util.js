@@ -16,7 +16,9 @@ const timestamp = function () {
     };
 
 const log = function (...args) {
+  if (process.env.NODE_ENV != 'test') {
     console.log(timestamp(), ...args)
+  }
 }
 
 module.exports = {
