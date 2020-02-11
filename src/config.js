@@ -1,5 +1,7 @@
-// Load config
-var config = require('rc')("login-dc", {
+// Load config from config-file.
+const appName = 'dc-login-bot'
+
+var config = require('rc')(appName, {
     email_address: undefined,
     email_password: undefined,
     client: {
@@ -9,19 +11,24 @@ var config = require('rc')("login-dc", {
     }
 })
 
-if (!config.email_address || !config.email_password) {
-    console.error("Missing configuration: Email address or password is missing.")
-    process.exit(1)
+const configFile = config.config || `./.${appName}rc`
+var configError = false
+
+const checkPresenceInConfig = (key, value) => {
+  if (!value) {
+    console.error(`Missing configuration: Please add '${key}' to the config file ('${configFile}').`)
+    configError = true
+  }
 }
 
-if (
-    !config.client 
-    || !config.client.clientId
-    || !config.client.clientSecret
-    || !config.client.redirectUris
-    ) {
-    console.error("Missing configuration: please add clientId, clientSecret, and/or redirectUris to ~/.login-dcrc")
-    process.exit(1)
+checkPresenceInConfig('email_address', config.email_password)
+checkPresenceInConfig('email_password', config.email_password)
+checkPresenceInConfig('client.clientId', config.client.clientId)
+checkPresenceInConfig('client.clientId', config.client.clientSecret)
+checkPresenceInConfig('client.clientId', config.client.redirectUris)
+
+if (configError === true) {
+  process.exit(1)
 }
 
 module.exports = config
