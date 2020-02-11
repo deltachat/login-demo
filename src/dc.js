@@ -4,22 +4,28 @@ const C = require('deltachat-node/constants')
 const path = require('path')
 const { log } = require('./util')
 
-function getNewContactInGroup(chat_id) {
-    const contacts = dc.getChatContacts(chat_id)
-    return contacts.filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
-}
-
 const {
     saveChat,
     deleteChat
 } = require('./database')
 
-
-// Start DC
+// Start the DC core engine (threads etc.).
 const dc = new DeltaChat()
 
+/**
+ * Helper to get the ID of the new contact in the group. Implemented here
+ * because is uses DC constants.
+ */
+const getNewContactInGroup = (chat_id) => {
+    const contacts = dc.getChatContacts(chat_id)
+    return contacts.filter(cid => cid !== C.DC_CONTACT_ID_SELF)[0]
+}
+
+/**
+ * This function handles incoming messages that we might want to work with. It
+ * is called from the event listeners (see below).
+ */
 const handleDCMessage = async (dc, chatId, msgId) => {
-    // handle dc message
     var msg = dc.getMessage(msgId)
     log(`Got a message for chat ${chatId}: ${msg.getText()}`)
     
@@ -42,17 +48,32 @@ const handleDCMessage = async (dc, chatId, msgId) => {
 
 }
 
+/**
+ * Listen to event about incoming messages, and hand the payload over to the
+ * handling function.
+ */
+dc.on('DC_EVENT_INCOMING_MSG', (...args) => handleDCMessage(dc, ...args))
+
+/**
+ * Listen to this event, too, in order to not miss messages from a completely
+ * unknown sender.
+ * This works around the behaviour of deltachat-core-rust that doesn't fire the
+ * event DC_EVENT_INCOMING_MSG if the sender is unknown to the client (the core
+ * considers this message to be part of the "deaddrop").
+ */
 dc.on('DC_EVENT_MSGS_CHANGED', (chatId, msgId) => {
-    // Deaddrop fix for bot, otherwise first message would be ignored
     const message = dc.getMessage(msgId)
     if (message && message.isDeadDrop()) {
         handleDCMessage(dc, dc.createChatByMessageId(msgId), msgId)
     }
 })
-dc.on('DC_EVENT_INCOMING_MSG', (...args) => handleDCMessage(dc, ...args))
-// dc.on('ALL', console.log.bind(null, 'core |'))// for debugging
 
+// To log all events uncomment the next line.
+//dc.on('ALL', log.bind(null, 'core |'))
 
+/**
+ * Initialize the app, open the database.
+ */
 dc.open(path.join(__dirname, '../data'), () => {
     if (!dc.isConfigured()) {
         dc.configure({
@@ -61,9 +82,12 @@ dc.open(path.join(__dirname, '../data'), () => {
             e2ee_enabled: false,
         })
     }
-    log('init done')
+    log('Initialization done')
 })
 
+/**
+ * Close the database when the app exits.
+ */
 process.on('exit', () => {
     dc.close(() => {
         close_db()
