@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npx mocha --exit",
     "start": "node run"
   },
   "author": "",
@@ -20,5 +20,12 @@
     "rc": "^1.2.8",
     "sqlite3": "^4.1.0",
     "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "clear-module": "^4.0.0",
+    "mocha": "^7.0.1",
+    "sinon": "^8.1.1"
   }
 }

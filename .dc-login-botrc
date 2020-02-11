@@ -1,0 +1,10 @@
+{
+    // A test config for running mocha.
+    "email_address": "tmp_5402181990962156@testrun.org",
+    "email_password": "A+YCT6M+b9Dl",
+    "client": {
+        "clientId": "aRandomString",
+        "clientSecret": "another random string",
+        "redirectUris": ["http://localhost/callback"]
+    }
+}
