@@ -1,7 +1,10 @@
 # Login with DeltaChat - Demo
 
-Using DeltaChat as an authentication provider. This generates a QR code which
-you can scan with Delta Chat to create an account and get a login cookie.
+**This repository is outdated. You can find the better version of this repository here:
+https://github.com/deltachat-bot/discourse-login-bot**
+
+*Using DeltaChat as an authentication provider. This generates a QR code which
+you can scan with Delta Chat to create an account and get a login cookie.*
 
 ## Setup
 
